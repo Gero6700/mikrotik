@@ -1,0 +1,68 @@
+##Si pones alguna de esta regla quitando la LAN, se BLOQUEA ese trafico
+/ip firewall address-list
+add address=10.12.0.0/24 list="Local LAN"
+add address=0.0.0.0/8 comment="Self-Identification [RFC 3330]" list=bogons
+add address=127.0.0.0/8 comment="Loopback [RFC 3330]" list=bogons
+add address=169.254.0.0/16 comment="Link Local [RFC 3330]" list=bogons
+add address=192.0.2.0/24 comment="Reserved - IANA - TestNet1" list=bogons
+add address=192.88.99.0/24 comment="6to4 Relay Anycast [RFC 3068]" list=\
+    bogons
+add address=198.18.0.0/15 comment="NIDB Testing" list=bogons
+add address=198.51.100.0/24 comment="Reserved - IANA - TestNet2" list=bogons
+add address=203.0.113.0/24 comment="Reserved - IANA - TestNet3" list=bogons
+add address=224.0.0.0/4 comment=\
+    "MC, Class D, IANA # Check if you need this subnet before enable it" \
+    list=bogons
+
+/ip firewall filter
+add action=drop chain=input comment="ACCESO SSH - menos la lista Local LAN #" \
+    dst-port=222442 log=yes protocol=tcp src-address-list="!Local LAN"
+add action=add-src-to-address-list address-list=Syn_Flooder \
+    address-list-timeout=30m chain=input comment=\
+    "A\F1ade a la list Syn_Flooder (Intentos DoS)" connection-limit=30,32 \
+    protocol=tcp tcp-flags=syn
+add action=drop chain=input comment="Drop Intento de DoS de la lista" \
+    src-address-list=Syn_Flooder
+add action=add-src-to-address-list address-list=Port_Scanner \
+    address-list-timeout=1w chain=input comment="Port Scanner Detect" \
+    protocol=tcp psd=21,3s,3,1
+add action=drop chain=input comment="Drop to port scan list" \
+    src-address-list=Port_Scanner
+add action=jump chain=input comment="A\F1ade a control de ICMP" jump-target=\
+    ICMP protocol=icmp
+add action=drop chain=input comment=\
+    "Blockeo acceso Winbox - menos la lista Local LAN #" dst-port=90893 \
+    protocol=tcp src-address-list="!Local LAN"
+add action=jump chain=forward comment="A\F1ade a control de ICMP" \
+    jump-target=ICMP protocol=icmp
+add action=drop chain=forward comment="Drop to bogon list" dst-address-list=\
+    bogons
+add action=add-src-to-address-list address-list=spammers \
+    address-list-timeout=3h chain=forward comment="Anade spammers a una list\
+    a y no hay mas trafico de correo - durante 3h" connection-limit=30,32 \
+    dst-port=25,587 limit=30/1m,0:packet protocol=tcp
+add action=drop chain=forward comment="Drop de Spammers" dst-port=25,587 \
+    protocol=tcp src-address-list=spammers
+add action=accept chain=input comment="Accept DNS - UDP" port=53 protocol=udp
+add action=accept chain=input comment="Accept DNS - TCP" port=53 protocol=tcp
+add action=accept chain=input comment="Accept to established connections" \
+    connection-state=established
+add action=accept chain=input comment="Accept to related connections" \
+    connection-state=related
+add action=accept chain=input comment="Full access to SUPPORT address list" \
+    src-address-list="Local LAN"
+add action=accept chain=ICMP comment="Solicitud de eco - Evitando inundaci\F3n\
+    \_de ping, ajustar el l\EDmite seg\FAn sea necesario" icmp-options=8:0 \
+    limit=2,5:packet protocol=icmp
+add action=accept chain=ICMP comment="Echo reply" icmp-options=0:0 protocol=\
+    icmp
+add action=accept chain=ICMP comment="Time Exceeded" icmp-options=11:0 \
+    protocol=icmp
+add action=accept chain=ICMP comment="Destination unreachable" icmp-options=\
+    3:0-1 protocol=icmp
+add action=accept chain=ICMP comment="PMTUD - Descubrimiento del Tamanio M\E1\
+    ximo de Unidad de Transmisi\F3n\
+    \n" icmp-options=3:4 protocol=icmp
+add action=drop chain=ICMP comment="Drop resto ICMPs" protocol=icmp
+add action=drop chain=input comment="BLOQUEO DE TODO" in-interface=ether1
+

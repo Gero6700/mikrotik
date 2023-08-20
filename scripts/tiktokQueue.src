@@ -1,0 +1,15 @@
+/ip firewall mangle
+add action=mark-connection chain=prerouting comment=\
+    "Marcar conexiones TikTok" new-connection-mark=Tiktok-Connection \
+    passthrough=yes protocol=tcp tls-host=*tiktok*
+add action=mark-connection chain=prerouting new-connection-mark=\
+    Tiktok-Connection passthrough=yes protocol=tcp tls-host=*tiktok.com
+add action=mark-packet chain=prerouting comment=\
+    "Marcar TODOS los paquetes TikTok" connection-mark=Tiktok-Connection \
+    new-packet-mark=Tiktok-Packet passthrough=no
+
+/queue simple
+add comment=\
+    "Internet Package (Upload Speed: 10 Mbps, Download Speed: 10 Mbps)" \
+    max-limit=10M/10M name=Tiktok packet-marks=Tiktok-Packet target=\
+    10.12.100.0/24
