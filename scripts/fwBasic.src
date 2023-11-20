@@ -17,6 +17,10 @@ add address=224.0.0.0/4 comment=\
 /ip firewall filter
 add action=drop chain=input comment="ACCESO SSH - menos la lista Local LAN #" \
     dst-port=222442 log=yes protocol=tcp src-address-list="!Local LAN"
+add action=drop chain=input comment=\
+    "Blockeo acceso Winbox - menos la lista Local LAN #" dst-port=90893 \
+    protocol=tcp src-address-list="!Local LAN"
+
 add action=add-src-to-address-list address-list=Syn_Flooder \
     address-list-timeout=30m chain=input comment=\
     "A\F1ade a la list Syn_Flooder (Intentos DoS)" connection-limit=30,32 \
@@ -30,9 +34,6 @@ add action=drop chain=input comment="Drop to port scan list" \
     src-address-list=Port_Scanner
 add action=jump chain=input comment="A\F1ade a control de ICMP" jump-target=\
     ICMP protocol=icmp
-add action=drop chain=input comment=\
-    "Blockeo acceso Winbox - menos la lista Local LAN #" dst-port=90893 \
-    protocol=tcp src-address-list="!Local LAN"
 add action=jump chain=forward comment="A\F1ade a control de ICMP" \
     jump-target=ICMP protocol=icmp
 add action=drop chain=forward comment="Drop to bogon list" dst-address-list=\
@@ -64,5 +65,8 @@ add action=accept chain=ICMP comment="PMTUD - Descubrimiento del Tamanio M\E1\
     ximo de Unidad de Transmisi\F3n\
     \n" icmp-options=3:4 protocol=icmp
 add action=drop chain=ICMP comment="Drop resto ICMPs" protocol=icmp
+##Bloqueo por defectod de TODO
 add action=drop chain=input comment="BLOQUEO DE TODO" in-interface=ether1
+
+
 
