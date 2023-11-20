@@ -97,13 +97,13 @@ add comment=\
     10.12.100.0/24
 ```
 
-### Reglas Básicas
-#### Address Lists
-##### "Local LAN":
+## Reglas Básicas
+### Address Lists
+#### "Local LAN":
 
 Define una lista de direcciones IP locales (10.12.0.0/24) para permitir el acceso a servicios internos. Esta lista se utiliza para identificar tráfico interno que no debería ser bloqueado por las reglas de acceso.
 
-##### "bogons":
+#### "bogons":
 
 Agrupa direcciones IP reservadas o no utilizables según estándares (0.0.0.0/8, 127.0.0.0/8, 169.254.0.0/16, 192.0.2.0/24, 192.88.99.0/24, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4). Estas direcciones suelen ser reservadas para usos especiales o son direcciones no asignables en internet.
 
@@ -124,9 +124,9 @@ add address=224.0.0.0/4 comment=\
     list=bogons
 ```
 
-### Firewall Rules:
+## Firewall Rules:
 
-##### Control de Acceso SSH:
+#### Control de Acceso SSH:
 
 Esta regla bloquea el acceso SSH al puerto 22244, excepto para direcciones IP que estén en la lista "Local LAN". Registra intentos de acceso rechazados.
 
@@ -136,7 +136,7 @@ add action=drop chain=input comment="ACCESO SSH - menos la lista Local LAN #" \
     dst-port=222442 log=yes protocol=tcp src-address-list="!Local LAN"
 ```
 
-#### Bloqueo de Denegación de Servicio (DoS) y escaneos de puertos:
+### Bloqueo de Denegación de Servicio (DoS) y escaneos de puertos:
 Esta regla identifica intentos de Denegación de Servicio (DoS) mediante la limitación de conexiones TCP con la bandera SYN y agrega las direcciones IP a la lista "Syn_Flooder" durante 30 minutos.
 ``` bash
 add action=add-src-to-address-list address-list=Syn_Flooder \
@@ -158,7 +158,7 @@ add action=drop chain=input comment="Drop to port scan list" \
     src-address-list=Port_Scanner
 ```
 
-##### Control Tráfico Spammers
+#### Control Tráfico Spammers
 
 Estas reglas identifican las direcciones IP sospechosas y las incluyen en una lista temporal. Limitan la conexión SMTP a 30 intentos por minuto. Posteriormente, todo el tráfico procedente de estas direcciones IP hacia el puerto SMTP (25,587) se descarta para prevenir actividad no deseada
 
@@ -169,7 +169,7 @@ add action=drop chain=forward comment="Drop de Spammers" dst-port=25,587 protoco
 
 ```
 
-##### Bloqueo de Todo:
+#### Bloqueo de Todo:
 
 Establece una regla predeterminada que bloquea todo el tráfico entrante en la interfaz ether1. 
 
