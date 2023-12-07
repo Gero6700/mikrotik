@@ -4,6 +4,8 @@
 Con la ayuda de este script descargas un archivo temporal de Github donde solamente hay IPs maliciosas en texto plano, y comparas con las IPs que tiene la lista con el nombre **blacklist_IPs** y las que no estén se añaden. Además te aparece por consola las IPs que añade.
 También por seguridad hay un archivo json donde debes añadir información para el login hacia el Mikrotik.
 
+**Importante usar versión paramiko paramiko==2.7.0**
+
 ``` python
 import paramiko
 import requests

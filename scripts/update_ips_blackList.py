@@ -22,7 +22,7 @@ try:
     # Crear una conexión SSH
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh_client.connect(router_ip, port=router_port, username=router_user, password=router_password)
+    ssh_client.connect(router_ip, port=router_port, username=router_user, password=router_password, look_for_keys=False)
 
     # Ejecutar el comando SSH para obtener las direcciones IP existentes en la lista
     command = "/ip firewall address-list print where list=blacklist_IPs"
